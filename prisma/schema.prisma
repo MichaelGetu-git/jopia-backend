@@ -1,0 +1,334 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  passwordHash  String
+  roleId        Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  role          Role      @relation(fields: [roleId], references: [id])
+  profile       Profile?
+  jobApplications   JobApplication[]
+  companyUsers       CompanyUser[]
+  savedJobs         SavedJob[]
+  jobViews          JobView[]
+
+  @@map("user")
+}
+
+model Role {
+  id            Int       @id @default(autoincrement())
+  name          String 
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  users         User[]
+  companyUsers   CompanyUser[]
+
+  @@map("role")
+}
+
+model Profile {
+  id          Int     @id @default(autoincrement())
+  name        String?
+  userId      Int     @unique
+  phone       String?
+  profilePicture  String?
+  coverPicture    String?
+  location        String?
+  aboutMe         String?
+  bio             String?
+  currJobLocation String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user            User      @relation(fields: [userId], references: [id])
+  educations      Education[]
+  portfolios      Portfolio[]
+  socialLinks     SocialLink[]
+  experiences     Experience[]
+  profileSkills   ProfileSkill[]
+
+  @@map("profile")
+}
+
+model Education {
+  id          Int       @id @default(autoincrement())
+  uniName     String    
+  degreeLevel String
+  startYear   Int
+  endYear     Int?
+  field       String
+  description String?
+  profileId   Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  profile     Profile   @relation(fields: [profileId], references: [id])  
+
+  @@map("educations")     
+}
+
+model Portfolio {
+  id          Int       @id @default(autoincrement())
+  resume      String?
+  portfolioLink String?
+  profileId   Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  profile     Profile   @relation(fields: [profileId], references: [id])
+
+  @@map("portfolios")
+}
+
+model SocialLink {
+  id        Int       @id @default(autoincrement())
+  platform  String
+  link      String
+  profileId Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  profile   Profile   @relation(fields: [profileId], references: [id])
+
+  @@map("socialLinks")
+}
+
+model Experience {
+  id          Int     @id @default(autoincrement())
+  jobTitle    String
+  jobTypeId   Int 
+  startTime   DateTime
+  endTime     DateTime?
+  description String?
+  profileId   Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  jobType     JobType   @relation(fields: [jobTypeId], references: [id])
+  profile     Profile   @relation(fields: [profileId], references: [id])
+
+  @@map("experiences")
+}
+
+model Job {
+  id                      Int         @id   @default(autoincrement())
+  title                   String
+  description             String
+  minPrice                Float?
+  maxPrice                Float?
+  salaryType              String?
+  jobLocation             String?
+  postingDate             DateTime    @default(now())
+  applicationDeadline     DateTime?
+  benefits                String?
+  requirements            String?
+  responsibilities        String?
+  isUrgent                Boolean     @default(false)
+  viewCount               Int         @default(0)
+  companyId               Int
+  jobStatusId             Int
+  jobTypeId               Int
+  categoryId              Int
+  experienceLevelId       Int
+  deletedAt               DateTime?
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @updatedAt
+
+  category        JobCategory?  @relation(fields: [categoryId], references: [id])
+  company         Company   @relation(fields: [companyId], references: [id])
+  jobStatus       JobStatus   @relation(fields: [jobStatusId], references: [id])
+  jobType         JobType     @relation(fields: [jobTypeId], references: [id])
+  experienceLevel ExperienceLevel   @relation(fields: [experienceLevelId], references: [id])
+  jobSkills       JobSkill[]
+  jobApplications JobApplication[]
+  savedJobs       SavedJob[]
+  jobViews        JobView[]
+
+  @@map("jobs") 
+}
+
+model JobCategory {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  jobs        Job[]
+
+  @@map("jobCategory")
+}
+
+model JobType {
+  id        Int     @id   @default(autoincrement())
+  type      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  jobs  Job[]
+  experiences   Experience[]
+
+  @@map("jobType")
+}
+
+model ExperienceLevel {
+  id        Int     @id   @default(autoincrement())
+  level     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  jobs  Job[]
+
+  @@map("experienceLevel")
+}
+
+model Company {
+  id        Int     @id   @default(autoincrement())
+  name      String
+  industry  String?
+  size      String?
+  location  String?
+  website   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  jobs  Job[]
+  companyUsers   CompanyUser[]
+
+  @@map("company")
+}
+
+model Skill {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  profileSkills   ProfileSkill[]
+  jobSkills       JobSkill[]
+
+  @@map("skills")
+}
+
+model ProfileSkill {
+  profileId Int
+  skillId   Int
+
+  profile   Profile     @relation(fields: [profileId], references: [id])
+  skill     Skill       @relation(fields: [skillId], references: [id])
+
+  @@id([profileId, skillId])
+  @@map("profileSkill")
+}
+
+model JobSkill {
+  jobId   Int
+  skillId Int
+
+  job       Job     @relation(fields: [jobId], references: [id])
+  skill     Skill   @relation(fields: [skillId], references: [id])
+
+  @@id([jobId,skillId])
+  @@map("jobSkill")
+}
+
+model JobApplication {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  jobId     Int
+  applicationStatusId   Int
+  appliedDate   DateTime   @default(now())
+  resumeLink    String?
+  coverLetter   String?
+  reviewedAt    DateTime?
+  notes         String?
+
+  user          User        @relation(fields: [userId], references: [id])
+  job           Job         @relation(fields: [jobId], references: [id])
+  applicationStatus   ApplicationStatus   @relation(fields: [applicationStatusId], references: [id])
+
+  @@unique([userId, jobId])
+  @@map("jobApplication")
+}
+
+model ApplicationStatus {
+  id          Int       @id @default(autoincrement())
+  status      String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  jobApplications   JobApplication[]
+
+  @@map("applicationStatus")
+}
+
+model JobStatus {
+  id        Int     @id @default(autoincrement())
+  status    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  jobs      Job[]
+
+  @@map("jobStatus")
+}
+
+model CompanyUser {
+  id          Int     @id @default(autoincrement())
+  userId      Int
+  companyId   Int
+  roleId      Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id])
+  company     Company   @relation(fields: [companyId], references: [id])
+  role        Role      @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, companyId])
+  @@map("companyUser")
+}
+
+model SavedJob {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  jobId     Int
+  savedAt   DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  job       Job       @relation(fields: [jobId], references: [id])
+
+  @@unique([userId, jobId])
+  @@map("savedJobs")
+}
+
+model JobView {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  jobId     Int
+  viewedAt  DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id])
+  job       Job       @relation(fields: [jobId], references: [id])
+
+  @@map("jobViews")
+}
+
+
