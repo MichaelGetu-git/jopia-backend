@@ -135,8 +135,6 @@ router.get('/applied', async (req, res) => {
             },
             include: {
                 applicationStatus: true,
-                notes: true,
-                reviewedAt: true,
                 job: {
                     include: {
                         company: true,
@@ -187,10 +185,11 @@ router.get('/:id', async (req, res) => {
         if (userId) {
             await prisma.jobView.upsert({
                 where: {
-                    userId_jobId: {
-                        userId,
+                        userId_jobId: {
+                            userId,
+                            jobId: parseInt(id)
+                        },
                         jobId: parseInt(id)
-                    }
                 },
                 update: { viewedAt: new Date()},
                 create: {
@@ -348,7 +347,6 @@ router.put('/:id', async (req, res) => {
                 jobStatusId: activeStatus!.id,
                 jobTypeId,
                 experienceLevelId,
-                skillIds,
                 isUrgent,
                 jobSkills: {
                     create: skillIds?.map((skillId: number)=> ({
@@ -365,7 +363,7 @@ router.put('/:id', async (req, res) => {
                 }
             }
         });
-        return res.status(201).json({message: "Job updated successfully"});
+        return res.status(201).json({message: "Job updated successfully", updatedJobs});
     } catch (error : any) {
         return res.status(500).json({ message: error.message});
     }

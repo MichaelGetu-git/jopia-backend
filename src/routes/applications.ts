@@ -11,8 +11,6 @@ router.get('/me', async (req, res) => {
             },
             include: {
                 applicationStatus: true,
-                notes: true,
-                reviewedAt: true,
                 job: {
                     include: {
                         company: true,
@@ -33,6 +31,27 @@ router.get('/me', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+
+    const application = await prisma.jobApplication.findUnique({
+      where: { id: parseInt(id) },
+      include: {
+        job: true
+      }
+    })
+
+    if ( application.userId !== (req as any).userId) {
+      const isAdmin = await prisma.companyUser.findFirst({
+        where: {
+          userId: ( req as any).userId,
+          companyId: application.job.companyId,
+          role: { name: { in: ['companyId', 'recruiter']}}
+        }
+      });
+
+      if (!isAdmin) {
+        return res.status(403).json({message: 'Not authorized'})
+      }
+    }
     const applications = await prisma.jobApplication.findUnique({
       where: {
         id: parseInt(id),
@@ -59,18 +78,6 @@ router.put('/:id/review', async (req, res) => {
     const { id } = req.params;
     const { resumeLink, coverLetter } = req.body;
 
-    const job = await prisma.job.findFirst({
-      where: {
-        id: parseInt(id),
-        deletedAt: null,
-        jobStatus: {
-          status: { in: ['active', 'pending'] }
-        }
-      }
-    });
-
-    if (!job) { return res.status(404).json({ message: "Job not found"})};
-
     const reApply = await prisma.jobApplication.updateMany({
       where: {
         id: parseInt(id),
@@ -81,14 +88,6 @@ router.put('/:id/review', async (req, res) => {
         resumeLink,
         coverLetter,
       },
-      include: {
-        job: {
-          include: {
-            company: true
-          }
-        },
-        applicationStatus: true
-      }
     });
     return res.status(201).json({ message: "Application updated successfully", reApply});
   } catch (error : any) {

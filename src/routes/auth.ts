@@ -103,7 +103,7 @@ router.post('/forgot-password', async(req, res)=> {
         });
         if (!user) return res.status(400).json({message: "User not found"});
 
-        const token = jwt.sign({userId: user.userId}, process.env.JWT_SECRET as string, {expiresIn: '24h'})
+        const token = jwt.sign({userId: user.id}, process.env.JWT_SECRET as string, {expiresIn: '24h'})
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
