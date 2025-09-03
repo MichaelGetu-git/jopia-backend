@@ -43,7 +43,7 @@ router.post('/register', async(req, res)=> {
         const token = jwt.sign(
             { userId: user.id, email: user.email, roleId: user.roleId },
             process.env.JWT_SECRET!,
-            { expiresIn: '7d' }
+            { expiresIn: '24h' }
         );
 
         res.status(201).json({message: 'User registered', user: {id: user.id, email: user.email, role: user.role.name, profile: user.profile}, token })
@@ -65,25 +65,26 @@ router.post('/login', async (req, res) => {
                 profile: true
             }
         });
-        if (!user) return res.status(400).json({message: "Invalid credientials"});
+        if (!user) return res.status(400).json({message: "Invalid Credientials"});
 
         const isUser = await bcrypt.compare(password, user.passwordHash);
         if (!isUser) return res.status(400).json({message: 'Invalid Credientials'});
 
         const token = jwt.sign(
-            {id: user.id, roleId: user.roleId},
+            {userId: user.id, roleId: user.roleId},
             process.env.JWT_SECRET as string,
-            {expiresIn: '1h'}
+            {expiresIn: '24h'}
         );
 
         res.json({
             message: 'Login Successful',
             user: {
-                id: user.id,
+                userId: user.id,
                 email: user.email,
-                role: user.role.name,
+                roleId: user.roleId,
+                role: user.role.name, 
                 profile: user.profile
-            }
+            }, token
         });
     } catch(error: any) {
         res.status(500).json({message: error.message})
@@ -102,14 +103,14 @@ router.post('/forgot-password', async(req, res)=> {
         });
         if (!user) return res.status(400).json({message: "User not found"});
 
-        const token = jwt.sign({id: user.id}, process.env.JWT_SECRET as string, {expiresIn: '24h'})
+        const token = jwt.sign({userId: user.userId}, process.env.JWT_SECRET as string, {expiresIn: '24h'})
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
             auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS}
         });
 
-        const resetLink = `http://localhost:3000/reset-password/${token}`;
+        const resetLink = `${process.env.URL}/${token}`;
         await transporter.sendMail({
             from: process.env.EMAIL_USER,
             to: user.email,
@@ -127,13 +128,13 @@ router.post('/reset-password', async(req, res)=> {
     try {
         const {token, newPass} = req.body as {token: string; newPass: string; };
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {id: number};
+        const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {userId: number};
 
         const hashPass = await bcrypt.hash(newPass, 10);
 
         await prisma.user.update({
             where: {
-                id: decoded.id
+                id: decoded.userId
             },
             data: {
                 passwordHash: hashPass

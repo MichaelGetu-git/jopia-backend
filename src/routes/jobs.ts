@@ -86,8 +86,9 @@ router.get('/', async (req, res) => {
                     { postingDate: 'desc'}
                 ]
             }),
-        ]);
+        prisma.job.count({where})
 
+        ]);
         return res.json({
             jobs,
             pagination: {
@@ -99,6 +100,56 @@ router.get('/', async (req, res) => {
         });
     } catch (error : any) {
         return res.status(500).json({message: error.message})
+    }
+});
+
+
+router.get('/saved', async (req, res) => {
+    try {
+        const savedJobs = await prisma.savedJob.findMany({
+            where: {
+                userId: (req as any).userId,
+            },
+            include: {
+                job: {
+                    include: {
+                        company: true,
+                        jobType: true,
+                        experienceLevel: true
+                    }
+                }
+            },
+            orderBy: {savedAt: 'desc'}
+        });
+        return res.status(200).json({message: "Saved jobs", savedJobs});
+    } catch (error : any) {
+        return res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/applied', async (req, res) => {
+    try {
+        const appliedJobs = await prisma.jobApplication.findMany({
+            where: {
+                userId: ( req as any).userId
+            },
+            include: {
+                applicationStatus: true,
+                notes: true,
+                reviewedAt: true,
+                job: {
+                    include: {
+                        company: true,
+                        jobType: true,
+                        experienceLevel: true,
+                    }
+                }
+            },
+            orderBy: { appliedDate: 'desc'}
+        });
+        return res.status(200).json({ message: "Applied Jobs", appliedJobs})
+    } catch (error : any) {
+        return res.status(500).json({ message: error.message})
     }
 });
 
@@ -192,7 +243,7 @@ router.post('/', async (req, res) => {
             where: { status: 'active' }
         });
 
-        const job = await prisma.job.crete({
+        const job = await prisma.job.create({
             data: {
                 title,
                 description,
@@ -221,7 +272,7 @@ router.post('/', async (req, res) => {
                 jobType: true,
                 experienceLevel: true,
                 jobSkills: {
-                    include: true
+                    include: { skill : true}
                 }
             }
         });
@@ -253,7 +304,7 @@ router.put('/:id', async (req, res) => {
         } = req.body;
 
         const userId = (req as any).userId;
-        const jobId = Number(req.params.id);
+        const jobId = parseInt(req.params.id);
 
         const job = await prisma.job.findUnique({
             where: { id: jobId}
@@ -275,6 +326,9 @@ router.put('/:id', async (req, res) => {
 
         const activeStatus = await prisma.jobStatus.findFirst({
             where: { status: 'active'}
+        })
+        await prisma.jobSkill.deleteMany({
+            where: { jobId }
         })
         const updatedJobs = await prisma.job.update({
             where: { id: jobId},
@@ -307,7 +361,7 @@ router.put('/:id', async (req, res) => {
                 jobType: true,
                 experienceLevel: true,
                 jobSkills: {
-                    include: true
+                    include: { skill : true}
                 }
             }
         });
@@ -320,7 +374,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
     try {
         const userId = (req as any).userId;
-        const jobId = req.params.id;
+        const jobId = parseInt(req.params.id);
 
         const job = await prisma.job.findUnique({
             where: { id: jobId }
@@ -333,7 +387,7 @@ router.delete('/:id', async (req, res) => {
                 userId,
                 companyId: job.companyId,
                 role: {
-                    name: { in: ['companyId', 'recruiter']}
+                    name: { in: ['companyAdmin', 'recruiter']}
                 }
             }
         });
@@ -356,7 +410,7 @@ router.delete('/:id', async (req, res) => {
 
 router.get('/:id/applications', async (req, res) => {
     try {
-        const jobId = req.params.id;
+        const jobId = parseInt(req.params.id);
         const applications = await prisma.jobApplication.findMany({
             where: { jobId: jobId},
             include: {
@@ -440,7 +494,7 @@ router.post('/:id/save', async (req, res) => {
                     jobId: parseInt(id)
                 }
             },
-            upadate: {},
+            update: {},
             create: {
                 userId: (req as any).userId!,
                 jobId: parseInt(id)
@@ -465,54 +519,6 @@ router.delete('/:id/save', async (req, res) => {
             }
         });
         return res.json({ message: "Saved job deleted successfully"})
-    } catch (error : any) {
-        return res.status(500).json({ message: error.message})
-    }
-});
-
-router.get('/saved', async (req, res) => {
-    try {
-        const savedJobs = await prisma.savedJob.findMany({
-            where: {
-                userId: (req as any).userId,
-            },
-            include: {
-                job: {
-                    include: {
-                        company: true,
-                        jobType: true,
-                        experienceLevel: true
-                    }
-                }
-            },
-            orderBy: {savedAt: 'desc'}
-        });
-        return res.status(200).json({message: "Saved jobs", savedJobs});
-    } catch (error : any) {
-        return res.status(500).json({ message: error.message });
-    }
-});
-
-router.get('/applied', async (req, res) => {
-    try {
-        const appliedJobs = await prisma.jobApplication.findMany({
-            include: {
-                applicationStatus: true,
-                notes: true,
-                reviewedAt: true,
-                job: {
-                    include: {
-                        company: true,
-                        jobType: true,
-                        experienceLevel: true,
-                        include: {
-                            jobStatus: true
-                        }
-                    }
-                }
-            }
-        });
-        return res.status(200).json({ message: "Applied Jobs", appliedJobs})
     } catch (error : any) {
         return res.status(500).json({ message: error.message})
     }

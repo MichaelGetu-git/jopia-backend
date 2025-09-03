@@ -202,6 +202,7 @@ model ExperienceLevel {
 model Company {
   id        Int     @id   @default(autoincrement())
   name      String
+  description String
   industry  String?
   size      String?
   location  String?

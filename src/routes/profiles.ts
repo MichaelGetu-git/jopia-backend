@@ -6,7 +6,7 @@ const router = express.Router();
 router.get('/me', async(req, res)=> {
     try {
         const user = await prisma.user.findUnique({
-            where: {userId: (req as any).user.userId},
+            where: {userId: (req as any).userId},
             include: {
                 educations: true,
                 experiences: {
@@ -38,7 +38,7 @@ router.put('/me', async(req, res)=> {
         const { name, phone, location, aboutMe, bio, currJobLocation } = req.body;
 
         const profile = await prisma.profile.update({
-            where: {userId: (req as any).user.userId},
+            where: {userId: (req as any).userId},
             data: {
                 name,
                 phone,
@@ -57,10 +57,10 @@ router.put('/me', async(req, res)=> {
 
 router.get('/:id', async(req, res)=> {
     try {
-        const { id } = req.params;
+        const id = parseInt(req.params.id);
 
         const profile = await prisma.profile.findUnique({
-            where: { id: parseInt(id)},
+            where: { id: id},
             include: {
                 educations: true,
                 experiences: {
@@ -129,7 +129,7 @@ router.put('/me/educations/:id', async(req, res)=> {
             return res.status(404).json({message: 'Profile not found'});
         }
         const educations = await prisma.education.update({
-            where: {id: req.params.id},
+            where: {id: parseInt(req.params.id)},
             data: {
                 uniName,
                 degreeLevel,
@@ -149,7 +149,7 @@ router.put('/me/educations/:id', async(req, res)=> {
 
 router.delete('/me/educations/:id', async (req, res) => {
     try {
-        const  id = (req as any).params.id
+        const  id = parseInt(req.params.id)
 
         await prisma.education.delete({
             where: { id: id}
@@ -197,7 +197,7 @@ router.post('/me/experiences', async(req, res)=> {
 router.put('/me/experiences/:id', async(req, res)=> {
     try {
         const { jobTitle, jobTypeId, startTime, endTime, description } = req.body;
-
+        const id = parseInt(req.params.id);
         const profile = await prisma.profile.findUnique({
             where: { userId: ( req as any).userId}
         });
@@ -205,7 +205,7 @@ router.put('/me/experiences/:id', async(req, res)=> {
             return res.status(404).json({ message: 'Profile not found'});
         }
         const experience = await prisma.experience.update({
-            where: {id: req.params.id},
+            where: {id: id},
             data: {
                 jobTitle,
                 jobTypeId,
@@ -228,7 +228,7 @@ router.put('/me/experiences/:id', async(req, res)=> {
 
 router.delete('/me/experiences/:id', async(req, res)=> {
     try {
-        const id = (req as any).params.id;
+        const id = parseInt(req.params.id);
 
         await prisma.experience.delete({
             where: { id: id}
@@ -268,7 +268,7 @@ router.post('/me/portfolios', async(req, res)=> {
 router.put('/me/portfolios/:id', async(req, res)=> {
     try {
         const { resume, portfolioLink } = req.body;
-
+        const id = parseInt(req.params.id);
         const profile = await prisma.profile.findUnique({
             where: { userId: (req as any).userId}
         });
@@ -276,11 +276,11 @@ router.put('/me/portfolios/:id', async(req, res)=> {
         if (!profile) { return res.status(404).json({ message: "Profile not found"})};
 
         const portfolio = await prisma.portfolio.update({
-            where: { id: req.params.id},
+            where: { id: id},
             data: {
                 resume,
                 portfolioLink,
-                profile: profile.id
+                profileId: profile.id
             }
         });
         res.status(201).json({ message: "Portfolio updated successfully", portfolio})
@@ -291,9 +291,10 @@ router.put('/me/portfolios/:id', async(req, res)=> {
 
 
 router.delete('/me/portfolios/:id', async(req, res)=> {
+    const id = parseInt(req.params.id)
     try {
         await prisma.portfolio.delete({
-            where: { id: (req as any).params.id}
+            where: { id: id}
         });
         res.json({ message: "Portfolio deleted successfully"});
     } catch (error : any) {
@@ -302,7 +303,7 @@ router.delete('/me/portfolios/:id', async(req, res)=> {
 });
 
 
-router.get('/me/social-links', async(req, res)=> {
+router.post('/me/social-links', async(req, res)=> {
     try {
         const { platform, link } = req.body
 
@@ -329,6 +330,7 @@ router.get('/me/social-links', async(req, res)=> {
 
 router.put('/me/social-links/:id', async(req, res)=> {
     try {
+        const id = parseInt(req.params.id);
         const { platform, link } = req.body;
 
         const profile = await prisma.profile.findUnique({
@@ -338,7 +340,7 @@ router.put('/me/social-links/:id', async(req, res)=> {
         if (!profile) { return res.status(404).json({ message: "Profile not found"})};
 
         const socialLinks = await prisma.socialLink.update({
-            where: { id: req.params.id},
+            where: { id: id },
             data: {
                 platform,
                 link,
@@ -354,8 +356,9 @@ router.put('/me/social-links/:id', async(req, res)=> {
 
 router.delete('/me/social-links/:id', async(req, res)=> {
     try {
+        const id = parseInt(req.params.id)
         await prisma.socialLink.delete({
-            where: { id: (req as any).params.id}
+            where: { id: id}
         });
         res.json({ message: "Social link deleted successfully"})
     } catch (error : any) {
@@ -364,7 +367,7 @@ router.delete('/me/social-links/:id', async(req, res)=> {
 });
 
 
-router.get('/me/skills', async(req, res)=> {
+router.post('/me/skills', async(req, res)=> {
     try {
         const { skillIds } = req.body;
 
@@ -376,7 +379,7 @@ router.get('/me/skills', async(req, res)=> {
 
         const profileSkills = await Promise.all(
             skillIds.map((skillId: number) => {
-                prisma.profileSkill.upsert({
+                return prisma.profileSkill.upsert({
                     where: {
                         profileId_skillId: {
                             profileId: profile.id,
@@ -400,8 +403,8 @@ router.get('/me/skills', async(req, res)=> {
 
 router.put('/me/skills/:skillId', async(req, res)=> {
     try {
-        const { skillIds, skill } = req.body;
-
+        const { skillIds } = req.body;
+        const skill = parseInt(req.params.skillId);
         const profile = await prisma.profile.findUnique({
             where: { userId: (req as any).userId}
         });
@@ -410,13 +413,17 @@ router.put('/me/skills/:skillId', async(req, res)=> {
 
         const profileSkills = await Promise.all(
             skillIds.map((skillId: number)=> {
-                prisma.profileSkill.upsert({
+                return prisma.profileSkill.upsert({
                     where: {
                         profileId_skillId: {
                             profileId: profile.id,
                             skillId
                         },
                         update: {
+                            profileId: profile.id,
+                            skillId: skill
+                        },
+                        create: {
                             profileId: profile.id,
                             skillId: skill
                         }
@@ -431,9 +438,18 @@ router.put('/me/skills/:skillId', async(req, res)=> {
 });
 
 router.delete('/me/skills/:skillId', async(req, res)=> {
+    const skillId = parseInt(req.params.skillId)
     try {
-        await prisma.profileSkills.delete({
-            where: { id: (req as any).params.skillId }
+        const profile = await prisma.profile.findUnique({
+            where: { userId: (req as any).userId }
+        });
+        await prisma.profileSkill.delete({
+            where: {
+                profileId_skillId: {
+                    profileId: profile.id,
+                    skillId: skillId
+                }
+            }
 
         })
         res.json({message: "Skill deleted successfully"});
