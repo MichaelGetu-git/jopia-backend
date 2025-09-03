@@ -1,6 +1,5 @@
 import express from "express";
-import prisma from '../prismaClient'
-import { dmmfToRuntimeDataModel } from "@prisma/client/runtime/library";
+import prisma from '../prismaClient.ts'
 
 const router = express.Router();
 

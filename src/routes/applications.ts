@@ -1,7 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import prisma from '../prismaClient'
-
+import prisma from '../prismaClient.ts'
 // GET /api/applications/me
 router.get('/me', async (req, res) => {
     try {
@@ -39,11 +38,11 @@ router.get('/:id', async (req, res) => {
       }
     })
 
-    if ( application.userId !== (req as any).userId) {
+    if ( application?.userId !== (req as any).userId) {
       const isAdmin = await prisma.companyUser.findFirst({
         where: {
           userId: ( req as any).userId,
-          companyId: application.job.companyId,
+          companyId: application?.job.companyId,
           role: { name: { in: ['companyId', 'recruiter']}}
         }
       });

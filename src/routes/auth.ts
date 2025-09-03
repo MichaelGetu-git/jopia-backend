@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import nodemailer from 'nodemailer'
-import prisma from '../prismaClient'
+import prisma from '../prismaClient.ts'
 
 dotenv.config();
 const router = express.Router();

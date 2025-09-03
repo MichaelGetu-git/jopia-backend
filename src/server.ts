@@ -1,12 +1,12 @@
 import express from 'express';
-import { authenticate } from './middleware/auth';
-import admin from './routes/admin'
-import profile from './routes/profiles'
-import auth from './routes/auth'
-import skills from './routes/skills'
-import companies from './routes/companies'
-import jobs from './routes/jobs'
-import applications from './routes/applications'
+import { authenticate } from './middleware/authentication.ts';
+import admin from './routes/admin.ts'
+import profile from './routes/profiles.ts'
+import auth from './routes/auth.ts'
+import skills from './routes/skills.ts'
+import companies from './routes/companies.ts'
+import jobs from './routes/jobs.ts'
+import applications from './routes/applications.ts'
 
 const app = express()
 const port = 3000

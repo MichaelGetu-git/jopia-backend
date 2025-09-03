@@ -1,44 +1,36 @@
 import express from 'express'
-import prisma from '../prismaClient'
+import prisma from '../prismaClient.ts'
 
 const router = express.Router();
 
-router.get('/me', async(req, res)=> {
+router.get('/me', async (req, res) => {
     try {
         const user = await prisma.user.findUnique({
-            where: {userId: (req as any).userId},
+            where: { id: (req as any).userId },
             include: {
-                educations: true,
-                experiences: {
-                    include: {
-                        jobType: true
-                    }
-                },
-                portfolios: true,
-                socialLinks: true,
-                profileSkills: {
-                    include: {
-                        skill: true
-                    }
-                }
+                role: true,
+                profile: true,
+                jobApplications: true,
+                savedJobs: true,
+                jobViews: true
             }
         });
 
-        if (!user) return res.status(404).json({message: 'User not found'});
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
         res.json(user);
     } catch (error: any) {
-        res.status(500).json({message: error.message});
+        res.status(500).json({ message: error.message });
     }
 });
 
 
-router.put('/me', async(req, res)=> {
+router.put('/me', async (req, res) => {
     try {
         const { name, phone, location, aboutMe, bio, currJobLocation } = req.body;
 
         const profile = await prisma.profile.update({
-            where: {userId: (req as any).userId},
+            where: { userId: (req as any).userId },
             data: {
                 name,
                 phone,
@@ -49,18 +41,18 @@ router.put('/me', async(req, res)=> {
             }
         });
 
-        res.json({ message: 'Profile Updated successfully', profile});
-    } catch(error : any) {
-        res.status(500).json({ message: error.message});
+        res.json({ message: 'Profile Updated successfully', profile });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
-router.get('/:id', async(req, res)=> {
+router.get('/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
 
         const profile = await prisma.profile.findUnique({
-            where: { id: id},
+            where: { id: id },
             include: {
                 educations: true,
                 experiences: {
@@ -76,60 +68,30 @@ router.get('/:id', async(req, res)=> {
                     }
                 }
             }
-            
+
         });
 
         if (!profile) {
-            return res.status(404).json({error: 'Profile not found'});
+            return res.status(404).json({ error: 'Profile not found' });
         }
         res.json(profile);
     } catch (error: any) {
-        res.status(500).json({ message: error.message})
+        res.status(500).json({ message: error.message })
     }
 });
 
 
-router.post('/me/educations', async(req, res)=> {
-   try {
-    const { uniName, degreeLevel, startYear, endYear, field, description } = req.body;
-
-    const profile = await prisma.profile.findUnique({
-        where: { userId: (req as any).userId},
-    });
-
-    if (!profile) { return res.status(404).json({ message: 'Profile not found'});}
-
-    const education = await prisma.education.create({
-        data: {
-            uniName,
-            degreeLevel,
-            startYear,
-            endYear,
-            field,
-            description,
-            profileId: profile.id
-        }
-    });
-
-    res.status(201).json({ message: 'Education added succesfully', education});
-   } catch (error : any) {
-        res.status(500).json({ message: error.message})
-   }
-});
-
-router.put('/me/educations/:id', async(req, res)=> {
+router.post('/me/educations', async (req, res) => {
     try {
-        const { uniName, degreeLevel, startYear, endYear, field, description} = req.body
+        const { uniName, degreeLevel, startYear, endYear, field, description } = req.body;
 
         const profile = await prisma.profile.findUnique({
-            where: { userId: (req as any).userId}
+            where: { userId: (req as any).userId },
         });
 
-        if (!profile) {
-            return res.status(404).json({message: 'Profile not found'});
-        }
-        const educations = await prisma.education.update({
-            where: {id: parseInt(req.params.id)},
+        if (!profile) { return res.status(404).json({ message: 'Profile not found' }); }
+
+        const education = await prisma.education.create({
             data: {
                 uniName,
                 degreeLevel,
@@ -141,37 +103,67 @@ router.put('/me/educations/:id', async(req, res)=> {
             }
         });
 
-        res.json({message: 'Educations updated successfully', educations})
-    } catch (error : any) {
-        res.status(500).json({ message: error.message});
+        res.status(201).json({ message: 'Education added succesfully', education });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message })
+    }
+});
+
+router.put('/me/educations/:id', async (req, res) => {
+    try {
+        const { uniName, degreeLevel, startYear, endYear, field, description } = req.body
+
+        const profile = await prisma.profile.findUnique({
+            where: { userId: (req as any).userId }
+        });
+
+        if (!profile) {
+            return res.status(404).json({ message: 'Profile not found' });
+        }
+        const educations = await prisma.education.update({
+            where: { id: parseInt(req.params.id) },
+            data: {
+                uniName,
+                degreeLevel,
+                startYear,
+                endYear,
+                field,
+                description,
+                profileId: profile.id
+            }
+        });
+
+        res.json({ message: 'Educations updated successfully', educations })
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 router.delete('/me/educations/:id', async (req, res) => {
     try {
-        const  id = parseInt(req.params.id)
+        const id = parseInt(req.params.id)
 
         await prisma.education.delete({
-            where: { id: id}
+            where: { id: id }
         });
 
-        res.json({message: "Education deleted successfully"});
-    } catch (error : any) {
-        return res.status(500).json({message: error.message})
-    } 
+        res.json({ message: "Education deleted successfully" });
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message })
+    }
 })
 
 
-router.post('/me/experiences', async(req, res)=> {
+router.post('/me/experiences', async (req, res) => {
     try {
         const { jobTitle, jobTypeId, startTime, endTime, description } = req.body;
 
         const profile = await prisma.profile.findUnique({
-            where: {userId: (req as any).userId}
+            where: { userId: (req as any).userId }
         });
 
         if (!profile) {
-            return res.status(404).json({message: 'Profile not found'})
+            return res.status(404).json({ message: 'Profile not found' })
         }
 
         const experience = await prisma.experience.create({
@@ -188,24 +180,24 @@ router.post('/me/experiences', async(req, res)=> {
             }
         });
 
-        res.status(201).json({ message: 'Experience added successfuly', experience});
-    } catch (error : any) {
-        res.status(500).json({ message: error.message})
+        res.status(201).json({ message: 'Experience added successfuly', experience });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message })
     }
 });
 
-router.put('/me/experiences/:id', async(req, res)=> {
+router.put('/me/experiences/:id', async (req, res) => {
     try {
         const { jobTitle, jobTypeId, startTime, endTime, description } = req.body;
         const id = parseInt(req.params.id);
         const profile = await prisma.profile.findUnique({
-            where: { userId: ( req as any).userId}
+            where: { userId: (req as any).userId }
         });
         if (!profile) {
-            return res.status(404).json({ message: 'Profile not found'});
+            return res.status(404).json({ message: 'Profile not found' });
         }
         const experience = await prisma.experience.update({
-            where: {id: id},
+            where: { id: id },
             data: {
                 jobTitle,
                 jobTypeId,
@@ -219,36 +211,36 @@ router.put('/me/experiences/:id', async(req, res)=> {
             }
         });
 
-        res.status(201).json({ message: 'Experiences updated successfully', experience})
-    } catch (error : any) {
-        res.status(500).json({message: error.message})
+        res.status(201).json({ message: 'Experiences updated successfully', experience })
+    } catch (error: any) {
+        res.status(500).json({ message: error.message })
     }
 })
 
 
-router.delete('/me/experiences/:id', async(req, res)=> {
+router.delete('/me/experiences/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
 
         await prisma.experience.delete({
-            where: { id: id}
+            where: { id: id }
         });
 
-        res.json({ message: "Experience deleted successfully"});
-    } catch (error : any) {
-        res.status(500).json({ message: error.message});
+        res.json({ message: "Experience deleted successfully" });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
-router.post('/me/portfolios', async(req, res)=> {
+router.post('/me/portfolios', async (req, res) => {
     try {
         const { resume, portfolioLink } = req.body
 
         const profile = await prisma.profile.findUnique({
-            where: {userId: (req as any).userId}
+            where: { userId: (req as any).userId }
         });
 
-        if (!profile) { return res.status(404).json({message: "Profile not found"})};
+        if (!profile) { return res.status(404).json({ message: "Profile not found" }) };
 
         const portfolio = await prisma.portfolio.create({
             data: {
@@ -257,61 +249,61 @@ router.post('/me/portfolios', async(req, res)=> {
                 profileId: profile.id
             }
         });
-        res.status(201).json({ message: "Portfolio created successfully", portfolio});
+        res.status(201).json({ message: "Portfolio created successfully", portfolio });
 
-    } catch (error : any) {
-        res.status(500).json({ message: error.message});
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 
-router.put('/me/portfolios/:id', async(req, res)=> {
+router.put('/me/portfolios/:id', async (req, res) => {
     try {
         const { resume, portfolioLink } = req.body;
         const id = parseInt(req.params.id);
         const profile = await prisma.profile.findUnique({
-            where: { userId: (req as any).userId}
+            where: { userId: (req as any).userId }
         });
 
-        if (!profile) { return res.status(404).json({ message: "Profile not found"})};
+        if (!profile) { return res.status(404).json({ message: "Profile not found" }) };
 
         const portfolio = await prisma.portfolio.update({
-            where: { id: id},
+            where: { id: id },
             data: {
                 resume,
                 portfolioLink,
                 profileId: profile.id
             }
         });
-        res.status(201).json({ message: "Portfolio updated successfully", portfolio})
-    } catch (error : any) {
-        res.status(500).json({ message: error.message});
+        res.status(201).json({ message: "Portfolio updated successfully", portfolio })
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 
-router.delete('/me/portfolios/:id', async(req, res)=> {
+router.delete('/me/portfolios/:id', async (req, res) => {
     const id = parseInt(req.params.id)
     try {
         await prisma.portfolio.delete({
-            where: { id: id}
+            where: { id: id }
         });
-        res.json({ message: "Portfolio deleted successfully"});
-    } catch (error : any) {
-        res.status(500).json({ message: error.message});
-    } 
+        res.json({ message: "Portfolio deleted successfully" });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 
-router.post('/me/social-links', async(req, res)=> {
+router.post('/me/social-links', async (req, res) => {
     try {
         const { platform, link } = req.body
 
         const profile = await prisma.profile.findUnique({
-            where: { userId: (req as any).userId}
+            where: { userId: (req as any).userId }
         });
 
-        if (!profile) { return res.status(404).json({message: "profile not found"})}
+        if (!profile) { return res.status(404).json({ message: "profile not found" }) }
 
         const socialLinks = await prisma.socialLink.create({
             data: {
@@ -321,23 +313,23 @@ router.post('/me/social-links', async(req, res)=> {
             }
         });
 
-        res.status(201).json({message: "Social Links created successfully", socialLinks});
-    } catch (error : any) {
-        res.status(500).json({ message: error.message});
+        res.status(201).json({ message: "Social Links created successfully", socialLinks });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 
-router.put('/me/social-links/:id', async(req, res)=> {
+router.put('/me/social-links/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
         const { platform, link } = req.body;
 
         const profile = await prisma.profile.findUnique({
-            where: {userId: (req as any).userId}
+            where: { userId: (req as any).userId }
         });
 
-        if (!profile) { return res.status(404).json({ message: "Profile not found"})};
+        if (!profile) { return res.status(404).json({ message: "Profile not found" }) };
 
         const socialLinks = await prisma.socialLink.update({
             where: { id: id },
@@ -347,27 +339,27 @@ router.put('/me/social-links/:id', async(req, res)=> {
                 profileId: profile.id
             }
         });
-        res.status(201).json({message: "Social Links updated successfully", socialLinks});
-    } catch (error : any) {
-        res.status(500).json({message: error.message});
+        res.status(201).json({ message: "Social Links updated successfully", socialLinks });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
 
-router.delete('/me/social-links/:id', async(req, res)=> {
+router.delete('/me/social-links/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id)
         await prisma.socialLink.delete({
-            where: { id: id}
+            where: { id: id }
         });
-        res.json({ message: "Social link deleted successfully"})
-    } catch (error : any) {
-        res.status(500).json({message: error.message});
-    } 
+        res.json({ message: "Social link deleted successfully" })
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
 });
 
 
-router.post('/me/skills', async(req, res)=> {
+router.post('/me/skills', async (req, res) => {
     try {
         const { skillIds } = req.body;
 
@@ -375,7 +367,7 @@ router.post('/me/skills', async(req, res)=> {
             where: { userId: (req as any).userId }
         });
 
-        if (!profile) { return res.status(404).json({ message: "Profile not found"})};
+        if (!profile) { return res.status(404).json({ message: "Profile not found" }) };
 
         const profileSkills = await Promise.all(
             skillIds.map((skillId: number) => {
@@ -395,49 +387,50 @@ router.post('/me/skills', async(req, res)=> {
             })
         );
 
-        res.status(201).json({ message: 'Skills added successfully', profileSkills});
-    } catch (error : any) {
-        res.status(500).json({message: error.message});
+        res.status(201).json({ message: 'Skills added successfully', profileSkills });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
-router.put('/me/skills/:skillId', async(req, res)=> {
+router.put('/me/skills/:skillId', async (req, res) => {
     try {
         const { skillIds } = req.body;
         const skill = parseInt(req.params.skillId);
         const profile = await prisma.profile.findUnique({
-            where: { userId: (req as any).userId}
+            where: { userId: (req as any).userId }
         });
 
-        if (!profile) { return res.status(404).json({ message: "Profile not found"})};
+        if (!profile) { return res.status(404).json({ message: "Profile not found" }) };
 
         const profileSkills = await Promise.all(
-            skillIds.map((skillId: number)=> {
+            skillIds.map((skillId: number) => {
                 return prisma.profileSkill.upsert({
                     where: {
                         profileId_skillId: {
                             profileId: profile.id,
                             skillId
                         },
-                        update: {
-                            profileId: profile.id,
-                            skillId: skill
-                        },
-                        create: {
-                            profileId: profile.id,
-                            skillId: skill
-                        }
+
+                    },
+                    update: {
+                        profileId: profile.id,
+                        skillId: skill
+                    },
+                    create: {
+                        profileId: profile.id,
+                        skillId: skill
                     }
                 });
             })
         );
-        res.status(201).json({message: "Skills updated successfully", profileSkills});
-    } catch (error : any) {
-        res.status(500).json({ message: error.message});
+        res.status(201).json({ message: "Skills updated successfully", profileSkills });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
     }
 });
 
-router.delete('/me/skills/:skillId', async(req, res)=> {
+router.delete('/me/skills/:skillId', async (req, res) => {
     const skillId = parseInt(req.params.skillId)
     try {
         const profile = await prisma.profile.findUnique({
@@ -446,14 +439,14 @@ router.delete('/me/skills/:skillId', async(req, res)=> {
         await prisma.profileSkill.delete({
             where: {
                 profileId_skillId: {
-                    profileId: profile.id,
+                    profileId: profile!.id,
                     skillId: skillId
                 }
             }
 
         })
-        res.json({message: "Skill deleted successfully"});
-    } catch (error : any) {
+        res.json({ message: "Skill deleted successfully" });
+    } catch (error: any) {
         res.status(500).json({ message: error.message })
     }
 });

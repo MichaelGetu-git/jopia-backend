@@ -1,5 +1,5 @@
 import express from 'express';
-import prisma from '../prismaClient'
+import prisma from '../prismaClient.ts'
 const router = express.Router();
 
 // GET /api/skills
@@ -45,7 +45,7 @@ router.post('/', async (req, res) => {
 // GET /api/skills/popular
 router.get('/popular', async (req, res) => {
   try {
-    const poularSkills = await prisma.skill.findMany({
+    const popularSkills = await prisma.skill.findMany({
       include: {
         _count: {
           select: {
@@ -63,7 +63,7 @@ router.get('/popular', async (req, res) => {
       ],
       take: 20
     });
-    res.status(200).json({ message: 'Popular skills', poularSkills});
+    res.status(200).json({ message: 'Popular skills', popularSkills});
   } catch ( error : any) {
     res.status(500).json({ message: error.message});
   }
