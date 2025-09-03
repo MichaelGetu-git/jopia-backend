@@ -318,31 +318,207 @@ router.put('/:id', async (req, res) => {
 });
 
 router.delete('/:id', async (req, res) => {
+    try {
+        const userId = (req as any).userId;
+        const jobId = req.params.id;
 
+        const job = await prisma.job.findUnique({
+            where: { id: jobId }
+        });
+
+        if (!job) { return res.status(404).json({ message: "Job not found"})};
+
+        const companyUser = await prisma.companyUser.findFirst({
+            where: {
+                userId,
+                companyId: job.companyId,
+                role: {
+                    name: { in: ['companyId', 'recruiter']}
+                }
+            }
+        });
+
+        if (!companyUser) { return res.status(403).json({message: 'Not authorized to delete this job'})};
+
+        await prisma.job.update({
+            where: { 
+                id: jobId,
+            },
+            data: {
+                deletedAt: new Date(),
+            }
+        });
+        return res.json({message: "Job deleted successfully"});
+    } catch (error : any) {
+        return res.status(500).json({ message: error.message});
+    }
 });
 
 router.get('/:id/applications', async (req, res) => {
+    try {
+        const jobId = req.params.id;
+        const applications = await prisma.jobApplication.findMany({
+            where: { jobId: jobId},
+            include: {
+                user: true,
+                job: true,
+                applicationStatus: true,
+            }
+        });
 
+        return res.status(200).json({message: "Applications", applications})
+    } catch (error : any) {
+        return res.status(500).json({message: error.message})
+    }
 });
 
 router.post('/:id/apply', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { resumeLink, coverLetter } = req.body;
 
+        const job = await prisma.job.findFirst({
+            where: {
+                id: parseInt(id),
+                deletedAt: null,
+                jobStatus: {
+                    status: 'active'
+                }
+            }
+        });
+
+        if (!job) {
+            return res.status(404).json({ message: "Job not found"});
+        }
+
+        const existingApplication = await prisma.jobApplication.findUnique({
+            where: {
+                userId_jobId: {
+                    userId: (req as any).userId!,
+                    jobId: parseInt(id)
+                }
+            }
+        });
+
+        if (existingApplication) { return res.status(400).json({ message: 'Applied to this job Already'})};
+
+        const pendingStatus = await prisma.applicationStatus.findFirst({
+            where: { status: 'pending'}
+        });
+
+        const application = await prisma.jobApplication.create({
+            data: {
+                userId: (req as any).userId!,
+                jobId: parseInt(id),
+                applicationStatusId: pendingStatus!.id,
+                resumeLink,
+                coverLetter
+            }, 
+            include: {
+                job: {
+                    include: {
+                        company: true
+                    }
+                },
+                applicationStatus: true
+            }
+        });
+        return res.status(201).json({ message: "Applied successfully"});
+    } catch (error : any) {
+        return res.status(500).json({message: error.message});
+    }
 });
 
 router.post('/:id/save', async (req, res) => {
+    try {
+        const { id } = req.params;
 
+        const savedJob = await prisma.savedJob.upsert({
+            where: {
+                userId_jobId: {
+                    userId: (req as any).userId!,
+                    jobId: parseInt(id)
+                }
+            },
+            upadate: {},
+            create: {
+                userId: (req as any).userId!,
+                jobId: parseInt(id)
+            }
+        });
+
+        return res.status(201).json({ message: 'Job saved successfully', savedJob});
+    } catch (error : any) {
+        return res.status(500).json({ message: error.message});
+    }
 });
 
 router.delete('/:id/save', async (req, res) => {
-
+    try {
+        const { id } = req.params;
+        await prisma.savedJob.delete({
+            where: {
+                userId_jobId: {
+                    userId: (req as any).userId!,
+                    jobId: parseInt(id)
+                }
+            }
+        });
+        return res.json({ message: "Saved job deleted successfully"})
+    } catch (error : any) {
+        return res.status(500).json({ message: error.message})
+    }
 });
 
 router.get('/saved', async (req, res) => {
-
+    try {
+        const savedJobs = await prisma.savedJob.findMany({
+            where: {
+                userId: (req as any).userId,
+            },
+            include: {
+                job: {
+                    include: {
+                        company: true,
+                        jobType: true,
+                        experienceLevel: true
+                    }
+                }
+            },
+            orderBy: {savedAt: 'desc'}
+        });
+        return res.status(200).json({message: "Saved jobs", savedJobs});
+    } catch (error : any) {
+        return res.status(500).json({ message: error.message });
+    }
 });
 
 router.get('/applied', async (req, res) => {
-
+    try {
+        const appliedJobs = await prisma.jobApplication.findMany({
+            where: {
+                userId: (req as any).userId
+            },
+            include: {
+                applicationStatus: true,
+                notes: true,
+                reviewedAt: true,
+                job: {
+                    include: {
+                        company: true,
+                        jobType: true,
+                        experienceLevel: true,
+                        include: {
+                            jobStatus: true
+                        }
+                    }
+                }
+            }
+        });
+        return res.status(200).json({ message: "Applied Jobs", appliedJobs})
+    } catch (error : any) {
+        return res.status(500).json({ message: error.message})
+    }
 });
 
 export default router;
