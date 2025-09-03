@@ -496,9 +496,6 @@ router.get('/saved', async (req, res) => {
 router.get('/applied', async (req, res) => {
     try {
         const appliedJobs = await prisma.jobApplication.findMany({
-            where: {
-                userId: (req as any).userId
-            },
             include: {
                 applicationStatus: true,
                 notes: true,
