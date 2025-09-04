@@ -1,0 +1,530 @@
+# Users API Test Suite
+# Base URL - Update this to match your server configuration
+@baseUrl = http://localhost:3000
+
+### Variables for testing
+@authToken = your_jwt_token_here
+@testUserId = 1
+@testProfileId = 1
+@testEducationId = 1
+@testExperienceId = 1
+@testPortfolioId = 1
+@testSocialLinkId = 1
+@testSkillId = 1
+@testSkillId2 = 2
+@testSkillId3 = 3
+@jobTypeId = 1
+
+###
+# 1. Get Current User Profile (Requires Authentication)
+GET {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 2. Get Current User Profile - Without Authentication (Should fail)
+GET {{baseUrl}}/users/me
+Content-Type: application/json
+
+###
+# 3. Update Current User Profile (Requires Authentication)
+PUT {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "John Doe Updated",
+  "phone": "+1-555-0123",
+  "location": "San Francisco, CA",
+  "aboutMe": "I'm a passionate full-stack developer with 5+ years of experience in building scalable web applications.",
+  "bio": "Software Engineer | React Enthusiast | Problem Solver",
+  "currJobLocation": "Remote"
+}
+
+###
+# 4. Update Current User Profile - Partial Update
+PUT {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "John Smith",
+  "location": "New York, NY"
+}
+
+###
+# 5. Update Current User Profile - Without Authentication (Should fail)
+PUT {{baseUrl}}/users/me
+Content-Type: application/json
+
+{
+  "name": "Unauthorized Update",
+  "location": "Nowhere"
+}
+
+###
+# 6. Get Specific User Profile by ID
+GET {{baseUrl}}/users/{{testProfileId}}
+Content-Type: application/json
+
+###
+# 7. Get Non-existent User Profile (Should return 404)
+GET {{baseUrl}}/users/99999
+Content-Type: application/json
+
+###
+# EDUCATION ENDPOINTS
+
+# 8. Add Education to Current User Profile
+POST {{baseUrl}}/users/me/educations
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "uniName": "Stanford University",
+  "degreeLevel": "Bachelor's",
+  "startYear": 2018,
+  "endYear": 2022,
+  "field": "Computer Science",
+  "description": "Focused on software engineering, algorithms, and data structures. Graduated Magna Cum Laude."
+}
+
+###
+# 9. Add Education - Missing Required Fields
+POST {{baseUrl}}/users/me/educations
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "uniName": "Incomplete University"
+}
+
+###
+# 10. Add Education - Without Authentication (Should fail)
+POST {{baseUrl}}/users/me/educations
+Content-Type: application/json
+
+{
+  "uniName": "Unauthorized University",
+  "degreeLevel": "Master's",
+  "startYear": 2020,
+  "endYear": 2022,
+  "field": "Computer Science"
+}
+
+###
+# 11. Update Education (Use ID from previous create response)
+PUT {{baseUrl}}/users/me/educations/{{testEducationId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "uniName": "Stanford University",
+  "degreeLevel": "Bachelor of Science",
+  "startYear": 2018,
+  "endYear": 2022,
+  "field": "Computer Science & Engineering",
+  "description": "Focused on software engineering, algorithms, data structures, and machine learning. Graduated Magna Cum Laude with honors."
+}
+
+###
+# 12. Update Education - Without Authentication (Should fail)
+PUT {{baseUrl}}/users/me/educations/{{testEducationId}}
+Content-Type: application/json
+
+{
+  "uniName": "Unauthorized Update University"
+}
+
+###
+# 13. Delete Education
+DELETE {{baseUrl}}/users/me/educations/{{testEducationId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 14. Delete Education - Without Authentication (Should fail)
+DELETE {{baseUrl}}/users/me/educations/{{testEducationId}}
+Content-Type: application/json
+
+###
+# EXPERIENCE ENDPOINTS
+
+# 15. Add Experience to Current User Profile
+POST {{baseUrl}}/users/me/experiences
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "jobTitle": "Senior Full Stack Developer",
+  "jobTypeId": {{jobTypeId}},
+  "startTime": "2022-01-15",
+  "endTime": null,
+  "description": "Leading development of scalable web applications using React, Node.js, and PostgreSQL. Mentoring junior developers and collaborating with cross-functional teams."
+}
+
+###
+# 16. Add Experience - With End Date
+POST {{baseUrl}}/users/me/experiences
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "jobTitle": "Junior Software Developer",
+  "jobTypeId": {{jobTypeId}},
+  "startTime": "2020-06-01",
+  "endTime": "2021-12-31",
+  "description": "Developed and maintained web applications, participated in code reviews, and learned best practices in software development."
+}
+
+###
+# 17. Add Experience - Missing Required Fields
+POST {{baseUrl}}/users/me/experiences
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "jobTitle": "Incomplete Job"
+}
+
+###
+# 18. Add Experience - Without Authentication (Should fail)
+POST {{baseUrl}}/users/me/experiences
+Content-Type: application/json
+
+{
+  "jobTitle": "Unauthorized Job",
+  "jobTypeId": {{jobTypeId}},
+  "startTime": "2020-01-01"
+}
+
+###
+# 19. Update Experience
+PUT {{baseUrl}}/users/me/experiences/{{testExperienceId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "jobTitle": "Lead Full Stack Developer",
+  "jobTypeId": {{jobTypeId}},
+  "startTime": "2022-01-15",
+  "endTime": null,
+  "description": "Leading development of scalable web applications using React, Node.js, PostgreSQL, and AWS. Mentoring junior developers, conducting technical interviews, and collaborating with cross-functional teams to deliver high-quality products."
+}
+
+###
+# 20. Update Experience - Without Authentication (Should fail)
+PUT {{baseUrl}}/users/me/experiences/{{testExperienceId}}
+Content-Type: application/json
+
+{
+  "jobTitle": "Unauthorized Update"
+}
+
+###
+# 21. Delete Experience
+DELETE {{baseUrl}}/users/me/experiences/{{testExperienceId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# PORTFOLIO ENDPOINTS
+
+# 22. Add Portfolio to Current User Profile
+POST {{baseUrl}}/users/me/portfolios
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "resume": "https://example.com/john-doe-resume.pdf",
+  "portfolioLink": "https://johndoe.dev"
+}
+
+###
+# 23. Add Portfolio - Missing Fields
+POST {{baseUrl}}/users/me/portfolios
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "resume": "https://example.com/incomplete-resume.pdf"
+}
+
+###
+# 24. Add Portfolio - Without Authentication (Should fail)
+POST {{baseUrl}}/users/me/portfolios
+Content-Type: application/json
+
+{
+  "resume": "https://example.com/unauthorized-resume.pdf",
+  "portfolioLink": "https://unauthorized.dev"
+}
+
+###
+# 25. Update Portfolio
+PUT {{baseUrl}}/users/me/portfolios/{{testPortfolioId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "resume": "https://example.com/john-doe-resume-v2.pdf",
+  "portfolioLink": "https://johnsmith.dev"
+}
+
+###
+# 26. Update Portfolio - Without Authentication (Should fail)
+PUT {{baseUrl}}/users/me/portfolios/{{testPortfolioId}}
+Content-Type: application/json
+
+{
+  "resume": "https://example.com/unauthorized-update.pdf"
+}
+
+###
+# 27. Delete Portfolio
+DELETE {{baseUrl}}/users/me/portfolios/{{testPortfolioId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# SOCIAL LINKS ENDPOINTS
+
+# 28. Add Social Link to Current User Profile
+POST {{baseUrl}}/users/me/social-links
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "platform": "LinkedIn",
+  "link": "https://linkedin.com/in/johndoe"
+}
+
+###
+# 29. Add Multiple Social Links
+POST {{baseUrl}}/users/me/social-links
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "platform": "GitHub",
+  "link": "https://github.com/johndoe"
+}
+
+###
+# 30. Add Social Link - Twitter
+POST {{baseUrl}}/users/me/social-links
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "platform": "Twitter",
+  "link": "https://twitter.com/johndoe"
+}
+
+###
+# 31. Add Social Link - Missing Fields
+POST {{baseUrl}}/users/me/social-links
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "platform": "Instagram"
+}
+
+###
+# 32. Add Social Link - Without Authentication (Should fail)
+POST {{baseUrl}}/users/me/social-links
+Content-Type: application/json
+
+{
+  "platform": "LinkedIn",
+  "link": "https://linkedin.com/in/unauthorized"
+}
+
+###
+# 33. Update Social Link
+PUT {{baseUrl}}/users/me/social-links/{{testSocialLinkId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "platform": "LinkedIn",
+  "link": "https://linkedin.com/in/johnsmith"
+}
+
+###
+# 34. Update Social Link - Without Authentication (Should fail)
+PUT {{baseUrl}}/users/me/social-links/{{testSocialLinkId}}
+Content-Type: application/json
+
+{
+  "platform": "LinkedIn",
+  "link": "https://linkedin.com/in/unauthorized-update"
+}
+
+###
+# 35. Delete Social Link
+DELETE {{baseUrl}}/users/me/social-links/{{testSocialLinkId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# SKILLS ENDPOINTS
+
+# 36. Add Skills to Current User Profile
+POST {{baseUrl}}/users/me/skills
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "skillIds": [{{testSkillId}}, {{testSkillId2}}, {{testSkillId3}}]
+}
+
+###
+# 37. Add Single Skill
+POST {{baseUrl}}/users/me/skills
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "skillIds": [{{testSkillId}}]
+}
+
+###
+# 38. Add Skills - Empty Array
+POST {{baseUrl}}/users/me/skills
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "skillIds": []
+}
+
+###
+# 39. Add Skills - Without Authentication (Should fail)
+POST {{baseUrl}}/users/me/skills
+Content-Type: application/json
+
+{
+  "skillIds": [{{testSkillId}}, {{testSkillId2}}]
+}
+
+###
+# 40. Update Skills (Note: This endpoint seems to have implementation issues)
+PUT {{baseUrl}}/users/me/skills/{{testSkillId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "skillIds": [{{testSkillId2}}, {{testSkillId3}}]
+}
+
+###
+# 41. Delete Specific Skill
+DELETE {{baseUrl}}/users/me/skills/{{testSkillId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 42. Delete Skill - Without Authentication (Should fail)
+DELETE {{baseUrl}}/users/me/skills/{{testSkillId}}
+Content-Type: application/json
+
+###
+# EDGE CASES AND ERROR SCENARIOS
+
+# 43. Add Education with Invalid Date Range
+POST {{baseUrl}}/users/me/educations
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "uniName": "Test University",
+  "degreeLevel": "Bachelor's",
+  "startYear": 2022,
+  "endYear": 2020,
+  "field": "Computer Science",
+  "description": "Invalid date range - end year before start year"
+}
+
+###
+# 44. Add Experience with Invalid Date
+POST {{baseUrl}}/users/me/experiences
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "jobTitle": "Test Job",
+  "jobTypeId": {{jobTypeId}},
+  "startTime": "invalid-date",
+  "description": "Testing invalid date format"
+}
+
+###
+# 45. Add Social Link with Invalid URL
+POST {{baseUrl}}/users/me/social-links
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "platform": "LinkedIn",
+  "link": "not-a-valid-url"
+}
+
+###
+# 46. Add Skills with Invalid Skill IDs
+POST {{baseUrl}}/users/me/skills
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "skillIds": [99999, 88888]
+}
+
+###
+# 47. Update Profile with Very Long Strings
+PUT {{baseUrl}}/users/me
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "name": "A".repeat(1000),
+  "bio": "B".repeat(5000)
+}
+
+###
+# COMPREHENSIVE TEST SEQUENCE
+# Recommended test flow:
+# 1. Get current user profile (#1)
+# 2. Update profile basic info (#3)
+# 3. Add education (#8) - Save returned ID
+# 4. Add experience (#15) - Save returned ID  
+# 5. Add portfolio (#22) - Save returned ID
+# 6. Add social links (#28, #29, #30)
+# 7. Add skills (#36)
+# 8. Get user profile again (#1) - Verify all data
+# 9. Update education (#11) with saved ID
+# 10. Update experience (#19) with saved ID
+# 11. Update portfolio (#25) with saved ID
+# 12. Update social link (#33) with saved ID
+# 13. Delete skill (#41)
+# 14. Get specific profile (#6) to verify public view
+# 15. Clean up: Delete portfolio (#27), social link (#35), etc.
+
+### Environment Variables
+# Development
+# @baseUrl = http://localhost:3000
+
+# Staging  
+# @baseUrl = https://staging-api.yourcompany.com
+
+# Production
+# @baseUrl = https://api.yourcompany.com
+
+### Notes:
+# - Replace {{authToken}} with actual JWT token from login
+# - Replace test IDs with actual IDs from your database or API responses
+# - The skills update endpoint (PUT /me/skills/:skillId) seems to have logic issues in the code
+# - Some endpoints may require specific user profile data to exist first
+# - Remember to test both authenticated and unauthenticated requests
+# - The /users/:id endpoint returns public profile data (no authentication required)

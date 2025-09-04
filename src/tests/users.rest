@@ -1,0 +1,77 @@
+### Get My User Profile - Success
+GET http://localhost:3000/users/me
+
+### Get My User Profile - Unauthorized
+GET http://localhost:3000/users/me
+Authorization: Bearer invalid_token
+
+### Update My User Profile - Success
+PUT http://localhost:3000/users/me
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "phone": "987-654-3210",
+  "profilePicture": "profile.jpg",
+  "coverPicture": "cover.jpg",
+  "location": "Los Angeles",
+  "bio": "Frontend Developer",
+  "aboutMe": "Passionate about UI/UX"
+}
+
+### Update My User Profile - Missing Required Fields
+PUT http://localhost:3000/users/me
+Content-Type: application/json
+
+{
+  "phone": "987-654-3210"
+}
+
+### Update My User Profile - Unauthorized
+PUT http://localhost:3000/users/me
+Content-Type: application/json
+Authorization: Bearer invalid_token
+
+{
+  "name": "Jane Doe"
+}
+
+### Get User by ID - Success
+GET http://localhost:3000/users/1
+
+### Update My User Profile - Partial Update (Name Only)
+PUT http://localhost:3000/users/me
+Content-Type: application/json
+
+{
+  "name": "Updated Name Only"
+}
+
+### Update My User Profile - Empty Optional Fields
+PUT http://localhost:3000/users/me
+Content-Type: application/json
+
+{
+  "name": "User With Empty Fields",
+  "phone": "",
+  "profilePicture": null,
+  "coverPicture": null,
+  "location": "",
+  "bio": "",
+  "aboutMe": ""
+}
+
+### Update My User Profile - Invalid Data Type for Phone
+PUT http://localhost:3000/users/me
+Content-Type: application/json
+
+{
+  "name": "Invalid Phone User",
+  "phone": 1234567890
+}
+
+### Get User by ID - Not Found
+GET http://localhost:3000/users/9999
+
+### Get User by ID - Invalid ID Format
+GET http://localhost:3000/users/abc

@@ -1,0 +1,48 @@
+### Get My Applications
+GET http://localhost:3000/api/applications/me
+
+### Get Application by ID
+GET http://localhost:3000/api/applications/:id
+
+### Review Application - Approve
+PUT http://localhost:3000/api/applications/:id/review
+Content-Type: application/json
+
+{
+  "status": "approved"
+}
+
+### Review Application - Reject
+PUT http://localhost:3000/api/applications/:id/review
+Content-Type: application/json
+
+{
+  "status": "rejected"
+}
+
+### Update Application Status - Accepted
+PUT http://localhost:3000/api/applications/:id/status
+Content-Type: application/json
+
+{
+  "status": "accepted"
+}
+
+### Update Application Status - Interview
+PUT http://localhost:3000/api/applications/:id/status
+Content-Type: application/json
+
+{
+  "status": "interview"
+}
+
+### Update Application Status - Rejected
+PUT http://localhost:3000/api/applications/:id/status
+Content-Type: application/json
+
+{
+  "status": "rejected"
+}
+
+### Delete Application
+DELETE http://localhost:3000/api/applications/:id

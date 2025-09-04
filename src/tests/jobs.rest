@@ -1,0 +1,32 @@
+### Get All Jobs
+GET http://localhost:3000/jobs
+
+### Get All Jobs with Search Query
+GET http://localhost:3000/jobs?search=engineer
+
+### Get All Jobs with Location Filter
+GET http://localhost:3000/jobs?location=New York
+
+### Get All Jobs with Type Filter
+GET http://localhost:3000/jobs?type=Full-time
+
+### Get Saved Jobs
+GET http://localhost:3000/jobs/saved
+
+### Save a Job
+POST http://localhost:3000/jobs/:id/save
+
+### Unsave a Job
+DELETE http://localhost:3000/jobs/:id/save
+
+### Get Applied Jobs
+GET http://localhost:3000/jobs/applied
+
+### Apply for a Job
+POST http://localhost:3000/jobs/:id/apply
+
+### Get Job by ID
+GET http://localhost:3000/jobs/:id
+
+### Get Job by Non-existent ID
+GET http://localhost:3000/jobs/9999

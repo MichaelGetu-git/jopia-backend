@@ -1,0 +1,207 @@
+# Authentication API Test Suite
+# Base URL - Update this to match your server configuration
+@baseUrl = http://localhost:3000
+
+### Variables for testing
+@testEmail = test@example.com
+@testPassword = testPassword123
+@testName = John Doe
+@adminEmail = admin@example.com
+@adminPassword = adminPassword123
+
+###
+# 1. User Registration - Regular User (roleId defaults to 1)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}",
+  "name": "{{testName}}"
+}
+
+###
+# 2. User Registration - Admin User (explicit roleId)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{adminEmail}}",
+  "password": "{{adminPassword}}",
+  "name": "Admin User",
+  "roleId": 2
+}
+
+###
+# 3. User Registration - Duplicate Email (Should fail)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "anotherPassword",
+  "name": "Another User"
+}
+
+###
+# 4. User Registration - Missing Fields (Should fail)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "incomplete@example.com"
+}
+
+###
+# 5. User Login - Valid Credentials
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "{{testPassword}}"
+}
+
+###
+# 6. User Login - Invalid Email
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com",
+  "password": "{{testPassword}}"
+}
+
+###
+# 7. User Login - Invalid Password
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "wrongPassword"
+}
+
+###
+# 8. User Login - Missing Fields
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}"
+}
+
+###
+# 9. User Logout
+POST {{baseUrl}}/auth/logout
+Content-Type: application/json
+
+###
+# 10. Forgot Password - Valid Email
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}"
+}
+
+###
+# 11. Forgot Password - Invalid Email
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "nonexistent@example.com"
+}
+
+###
+# 12. Forgot Password - Missing Email
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{}
+
+###
+# 13. Reset Password - Valid Token
+# Note: Replace 'your_reset_token_here' with actual token from email
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "your_reset_token_here",
+  "newPass": "newPassword123"
+}
+
+###
+# 14. Reset Password - Invalid Token
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "invalid_token_123",
+  "newPass": "newPassword123"
+}
+
+###
+# 15. Reset Password - Missing Fields
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "some_token"
+}
+
+###
+# Test Sequence Example:
+# 1. Register a new user (Test #1)
+# 2. Login with the registered user (Test #5) - Save the token
+# 3. Request password reset (Test #10) - Check email for token
+# 4. Reset password with token from email (Test #13)
+# 5. Login with new password
+
+### 
+# Additional test cases for edge scenarios
+
+# 16. Registration with very long email
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "verylongemailaddressthatmightcauseissues@reallylongdomainname.com",
+  "password": "{{testPassword}}",
+  "name": "Long Email User"
+}
+
+###
+# 17. Registration with special characters in name
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "special@example.com",
+  "password": "{{testPassword}}",
+  "name": "José María O'Connor-Smith"
+}
+
+###
+# 18. Login after password reset (use after test #13)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{testEmail}}",
+  "password": "newPassword123"
+}
+
+###
+# Environment-specific tests
+# Uncomment and modify based on your deployment environment
+
+# Production Environment
+# @baseUrl = https://your-production-api.com
+
+# Staging Environment  
+# @baseUrl = https://your-staging-api.com
+
+# Development Environment
+# @baseUrl = http://localhost:3000

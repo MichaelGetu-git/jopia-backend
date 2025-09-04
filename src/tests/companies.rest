@@ -1,0 +1,47 @@
+### Get All Companies
+GET http://localhost:3000/companies
+
+### Get My Company
+GET http://localhost:3000/companies/me/jobs
+
+### Get Company by ID
+GET http://localhost:3000/companies/:id
+
+### Create Company - Success
+POST http://localhost:3000/companies
+Content-Type: application/json
+
+{
+  "name": "New Company",
+  "description": "A new company description",
+  "industry": "Tech",
+  "website": "https://newcompany.com",
+  "location": "San Francisco"
+}
+
+### Create Company - Missing Name
+POST http://localhost:3000/companies
+Content-Type: application/json
+
+{
+  "description": "A new company description",
+  "industry": "Tech",
+  "website": "https://newcompany.com",
+  "location": "San Francisco"
+}
+
+### Update Company - Success
+PUT http://localhost:3000/companies/:id
+Content-Type: application/json
+
+{
+  "name": "Updated Company Name"
+}
+
+### Update Company - Invalid ID
+PUT http://localhost:3000/companies/9999
+Content-Type: application/json
+
+{
+  "name": "Company with Invalid ID"
+}

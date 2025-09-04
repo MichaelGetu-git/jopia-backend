@@ -1,0 +1,35 @@
+### Get All Skills
+GET http://localhost:3000/skills
+
+### Create Skill - Success
+POST http://localhost:3000/skills
+Content-Type: application/json
+
+{
+  "name": "New Skill"
+}
+
+### Create Skill - Missing Name
+POST http://localhost:3000/skills
+Content-Type: application/json
+
+{
+  "description": "A skill without a name"
+}
+
+### Create Skill - Duplicate Skill Name
+POST http://localhost:3000/skills
+Content-Type: application/json
+
+{
+  "name": "New Skill"
+}
+
+### Get Popular Skills
+GET http://localhost:3000/skills/popular
+
+### Search Skills by Query
+GET http://localhost:3000/skills?search=java
+
+### Search Skills by Query and Limit
+GET http://localhost:3000/skills?search=python&limit=5

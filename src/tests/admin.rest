@@ -1,0 +1,11 @@
+### Get Admin Dashboard
+GET http://localhost:3000/admin/dashboard
+
+### Get All Users (Admin)
+GET http://localhost:3000/admin/users
+
+### Get All Companies (Admin)
+GET http://localhost:3000/admin/companies
+
+### Get All Jobs (Admin)
+GET http://localhost:3000/admin/jobs
