@@ -130,6 +130,7 @@ model Experience {
 
 model Job {
   id                      Int         @id   @default(autoincrement())
+  coverImage              String?
   title                   String
   description             String
   minPrice                Float?
