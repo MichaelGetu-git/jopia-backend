@@ -1,7 +1,20 @@
 import express from "express";
 import prisma from '../prismaClient.ts'
+import cloudinary from 'cloudinary'
+import multer from "multer";
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/'});
+
+interface MulterRequest extends Request {
+    file: Express.Multer.File;
+}
+
+cloudinary.v2.config({
+    cloud_name: `${process.env.CLOUDINARY_NAME}`,
+    api_key: `${process.env.CLOUDINARY_API_KEY}`,
+    api_secret: `${process.env.CLOUDINARY_API_SECRET}`
+});
 
 router.get('/', async (req, res) => {
     try {
@@ -204,7 +217,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-router.post('/', async (req, res) => {
+router.post('/', upload.single('coverImage'),async (req, res) => {
+    let coverImageUrl = null;
     try {
         const {
             title,
@@ -242,15 +256,22 @@ router.post('/', async (req, res) => {
             where: { status: 'active' }
         });
 
+        if (req.file) {
+            const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                folder: 'job_covers',
+            });
+            coverImageUrl = result.secure_url;
+        }
+
         const job = await prisma.job.create({
             data: {
                 title,
                 description,
-                minPrice,
-                maxPrice,
+                minPrice: Number(minPrice),
+                maxPrice: Number(maxPrice),
                 salaryType,
                 jobLocation,
-                coverImage: coverImage || null,
+                coverImage: coverImageUrl,
                 applicationDeadline: applicationDeadline ? new Date(applicationDeadline) : null,
                 benefits,
                 requirements,
@@ -329,14 +350,22 @@ router.put('/:id', async (req, res) => {
         })
         await prisma.jobSkill.deleteMany({
             where: { jobId }
-        })
+        });
+
+        let coverImageUrl =  null;
+        if (req.file) {
+            const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                folder: 'job_covers',
+            });
+            coverImageUrl = result.secure_url;
+        }
         const updatedJobs = await prisma.job.update({
             where: { id: jobId},
             data: {
                 title,
                 description,
-                minPrice,
-                maxPrice,
+                minPrice: Number(minPrice),
+                maxPrice: Number(maxPrice),
                 salaryType,
                 jobLocation,
                 applicationDeadline: applicationDeadline ? new Date(applicationDeadline) : null,
