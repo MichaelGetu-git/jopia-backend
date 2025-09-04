@@ -1,7 +1,16 @@
 import express from 'express'
 import prisma from '../prismaClient.ts'
+import multer from 'multer';
+import cloudinary from 'cloudinary';
 
 const router = express.Router();
+const upload = multer({ dest: 'uploads/ '});
+
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 router.get('/me', async (req, res) => {
     try {
@@ -25,15 +34,116 @@ router.get('/me', async (req, res) => {
 });
 
 
-router.put('/me', async (req, res) => {
+router.post('/me', upload.fields([
+    { name: 'coverPicture', maxCount: 1},
+    { name: 'profilePicture', maxCount: 1}
+]), async (req, res) => {
+    
+    let coverUrl = null;
+    let profileUrl = null;
+
     try {
-        const { name, phone, location, aboutMe, bio, currJobLocation } = req.body;
+        
+        if (req.files && !Array.isArray(req.files)) {
+            const coverFile = req.files!['coverPicture']?.[0];
+            const profileFile = req.files!['profilePicture']?.[0];
+
+            if (coverFile) {
+                const coverResult = await cloudinary.v2.uploader.upload(coverFile.path, {
+                    folder: 'profile_covers',
+                });
+                coverUrl = coverResult.secure_url;
+            }
+
+            if (profileFile) {
+                const profileResult = await cloudinary.v2.uploader.upload(profileFile.path, {
+                    folder: 'profile_pics',
+                });
+                profileUrl = profileResult.secure_url;
+            }
+        }
+        
+    } catch (error : any ) {
+        res.status(500).json({ message: error.message})
+    }
+    try {
+        const { name, phone,profilePicture, coverPicture, location, aboutMe, bio, currJobLocation } = req.body;
+
+        const profile = await prisma.profile.upsert({
+            where: { userId: (req as any).userId },
+             update: {
+                name,
+                phone,
+                profilePicture: profileUrl,
+                coverPicture: coverUrl,
+                location,
+                aboutMe,
+                bio,
+                currJobLocation
+            },
+            create: {
+                userId: (req as any).userId,
+                name,
+                phone,
+                profilePicture: profileUrl,
+                coverPicture: coverUrl,
+                location,
+                aboutMe,
+                bio,
+                currJobLocation
+            }
+        });
+
+        res.json({ message: 'Profile Updated successfully', profile });
+    } catch (error: any) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+
+router.put('/me', upload.fields([
+    { name: 'coverPicture', maxCount: 1},
+    { name: 'profilePicture', maxCount: 1}
+]), async (req, res) => {
+    
+    let coverUrl = null;
+    let profileUrl = null;
+
+    try {
+        
+        if (req.files && !Array.isArray(req.files)) {
+            const coverFile = req.files!['coverPicture']?.[0];
+            const profileFile = req.files!['profilePicture']?.[0];
+
+            if (coverFile) {
+                const coverResult = await cloudinary.v2.uploader.upload(coverFile.path, {
+                    folder: 'profile_covers',
+                });
+                coverUrl = coverResult.secure_url;
+            }
+
+            if (profileFile) {
+                const profileResult = await cloudinary.v2.uploader.upload(profileFile.path, {
+                    folder: 'profile_pics',
+                });
+                profileUrl = profileResult.secure_url;
+            }
+        }
+        
+    } catch (error : any ) {
+        res.status(500).json({ message: error.message})
+    }
+    try {
+        const { name, phone,profilePicture, coverPicture, location, aboutMe, bio, currJobLocation } = req.body;
 
         const profile = await prisma.profile.update({
             where: { userId: (req as any).userId },
             data: {
                 name,
                 phone,
+                profilePicture: profileUrl,
+                coverPicture: coverUrl,
                 location,
                 aboutMe,
                 bio,
@@ -232,7 +342,8 @@ router.delete('/me/experiences/:id', async (req, res) => {
     }
 });
 
-router.post('/me/portfolios', async (req, res) => {
+router.post('/me/portfolios',upload.single('resume'), async (req, res) => {
+    let resumeUrl = null;
     try {
         const { resume, portfolioLink } = req.body
 
@@ -242,9 +353,15 @@ router.post('/me/portfolios', async (req, res) => {
 
         if (!profile) { return res.status(404).json({ message: "Profile not found" }) };
 
+        if (req.file && req.file.mimetype !== 'application/pdf') {
+            const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                folder: 'resumes',
+            });
+            resumeUrl = result.secure_url;
+        }
         const portfolio = await prisma.portfolio.create({
             data: {
-                resume,
+                resume: resumeUrl,
                 portfolioLink,
                 profileId: profile.id
             }
@@ -257,7 +374,8 @@ router.post('/me/portfolios', async (req, res) => {
 });
 
 
-router.put('/me/portfolios/:id', async (req, res) => {
+router.put('/me/portfolios/:id',upload.single('resume') ,async (req, res) => {
+    let resumeUrl = null;
     try {
         const { resume, portfolioLink } = req.body;
         const id = parseInt(req.params.id);
@@ -267,10 +385,16 @@ router.put('/me/portfolios/:id', async (req, res) => {
 
         if (!profile) { return res.status(404).json({ message: "Profile not found" }) };
 
+        if (req.file && req.file.mimetype !== 'application/pdf') {
+            const result = await cloudinary.v2.uploader.upload(req.file.path, {
+                folder: 'resumes',
+            });
+            resumeUrl = result.secure_url;
+        }
         const portfolio = await prisma.portfolio.update({
             where: { id: id },
             data: {
-                resume,
+                resume: resumeUrl,
                 portfolioLink,
                 profileId: profile.id
             }
