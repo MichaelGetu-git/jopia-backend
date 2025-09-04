@@ -1,47 +1,82 @@
-### Get All Companies
-GET http://localhost:3000/companies
-
-### Get My Company
-GET http://localhost:3000/companies/me/jobs
-
-### Get Company by ID
-GET http://localhost:3000/companies/:id
-
-### Create Company - Success
-POST http://localhost:3000/companies
+### Get companies (paginated, with search/industry filter)
+GET http://localhost:5000/api/companies?page=1&limit=10&search=tech&industry=Software
 Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get jobs of my company (based on logged-in user)
+GET http://localhost:5000/api/companies/me/jobs
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get a single company by ID
+GET http://localhost:5000/api/companies/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Create a new company (superAdmin only)
+POST http://localhost:5000/api/companies
+Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-  "name": "New Company",
-  "description": "A new company description",
-  "industry": "Tech",
-  "website": "https://newcompany.com",
-  "location": "San Francisco"
+  "name": "OpenAI",
+  "industry": "Software",
+  "location": "San Francisco, USA",
+  "size": "500+",
+  "description": "AI research and deployment company",
+  "website": "https://openai.com"
 }
 
-### Create Company - Missing Name
-POST http://localhost:3000/companies
+###
+
+### Update a company (superAdmin or companyAdmin only)
+PUT http://localhost:5000/api/companies/1
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-  "description": "A new company description",
-  "industry": "Tech",
-  "website": "https://newcompany.com",
-  "location": "San Francisco"
+  "name": "OpenAI Updated",
+  "industry": "AI/ML",
+  "location": "San Francisco",
+  "size": "600+",
+  "description": "Updated description",
+  "website": "https://openai.com"
 }
 
-### Update Company - Success
-PUT http://localhost:3000/companies/:id
+###
+
+### Get jobs of a specific company
+GET http://localhost:5000/api/companies/1/jobs
 Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get company users (companyAdmin only)
+GET http://localhost:5000/api/companies/1/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Add a user to a company (companyAdmin only)
+POST http://localhost:5000/api/companies/1/users
+Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-  "name": "Updated Company Name"
+  "roleId": 2
 }
 
-### Update Company - Invalid ID
-PUT http://localhost:3000/companies/9999
+###
+
+### Remove a user from a company (companyAdmin only)
+DELETE http://localhost:5000/api/companies/1/users/5
 Content-Type: application/json
-
-{
-  "name": "Company with Invalid ID"
-}
+Authorization: Bearer {{token}}

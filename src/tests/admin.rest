@@ -1,21 +1,21 @@
 ### Admin Dashboard - Insights
-GET http://localhost:5000/api/admin/dashboard
+GET http://localhost:3000/admin/dashboard
 Content-Type: application/json
 
 ###
 
 ### Get all Users
-GET http://localhost:5000/api/admin/users
+GET http://localhost:3000/admin/users
 Content-Type: application/json
 
 ###
 
 ### Get all Companies
-GET http://localhost:5000/api/admin/companies
+GET http://localhost:3000/admin/companies
 Content-Type: application/json
 
 ###
 
 ### Get all Jobs
-GET http://localhost:5000/api/admin/jobs
+GET http://localhost:3000/admin/jobs
 Content-Type: application/json

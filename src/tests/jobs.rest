@@ -1,32 +1,355 @@
-### Get All Jobs
-GET http://localhost:3000/jobs
+# Jobs API Test Suite
+# Base URL - Update this to match your server configuration
+@baseUrl = http://localhost:3000
 
-### Get All Jobs with Search Query
-GET http://localhost:3000/jobs?search=engineer
+### Variables for testing
+# You'll need to get these from your database or previous API calls
+@authToken = your_jwt_token_here
+@companyId = 1
+@jobTypeId = 1
+@categoryId = 1
+@experienceLevelId = 1
+@skillId1 = 1
+@skillId2 = 2
+@testJobId = 1
 
-### Get All Jobs with Location Filter
-GET http://localhost:3000/jobs?location=New York
+###
+# 1. Get All Jobs - Basic Request
+GET {{baseUrl}}/jobs
+Content-Type: application/json
 
-### Get All Jobs with Type Filter
-GET http://localhost:3000/jobs?type=Full-time
+###
+# 2. Get All Jobs - With Pagination
+GET {{baseUrl}}/jobs?page=1&limit=5
+Content-Type: application/json
 
-### Get Saved Jobs
-GET http://localhost:3000/jobs/saved
+###
+# 3. Get All Jobs - With Search
+GET {{baseUrl}}/jobs?search=developer
+Content-Type: application/json
 
-### Save a Job
-POST http://localhost:3000/jobs/:id/save
+###
+# 4. Get All Jobs - With Location Filter
+GET {{baseUrl}}/jobs?location=New York
+Content-Type: application/json
 
-### Unsave a Job
-DELETE http://localhost:3000/jobs/:id/save
+###
+# 5. Get All Jobs - With Job Type Filter
+GET {{baseUrl}}/jobs?jobTypeId={{jobTypeId}}
+Content-Type: application/json
 
-### Get Applied Jobs
-GET http://localhost:3000/jobs/applied
+###
+# 6. Get All Jobs - With Experience Level Filter
+GET {{baseUrl}}/jobs?experienceLevelId={{experienceLevelId}}
+Content-Type: application/json
 
-### Apply for a Job
-POST http://localhost:3000/jobs/:id/apply
+###
+# 7. Get All Jobs - With Company Filter
+GET {{baseUrl}}/jobs?companyId={{companyId}}
+Content-Type: application/json
 
-### Get Job by ID
-GET http://localhost:3000/jobs/:id
+###
+# 8. Get All Jobs - With Category Filter
+GET {{baseUrl}}/jobs?categoryId={{categoryId}}
+Content-Type: application/json
 
-### Get Job by Non-existent ID
-GET http://localhost:3000/jobs/9999
+###
+# 9. Get All Jobs - With Skills Filter
+GET {{baseUrl}}/jobs?skills={{skillId1}},{{skillId2}}
+Content-Type: application/json
+
+###
+# 10. Get All Jobs - Complex Filter (Multiple Parameters)
+GET {{baseUrl}}/jobs?search=developer&location=remote&jobTypeId={{jobTypeId}}&experienceLevelId={{experienceLevelId}}&page=1&limit=10
+Content-Type: application/json
+
+###
+# 11. Get Saved Jobs (Requires Authentication)
+GET {{baseUrl}}/jobs/saved
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 12. Get Applied Jobs (Requires Authentication)
+GET {{baseUrl}}/jobs/applied
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 13. Get Specific Job by ID
+GET {{baseUrl}}/jobs/{{testJobId}}
+Content-Type: application/json
+
+###
+# 14. Get Specific Job by ID (With Authentication - for view tracking)
+GET {{baseUrl}}/jobs/{{testJobId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 15. Get Non-existent Job (Should return 404)
+GET {{baseUrl}}/jobs/99999
+Content-Type: application/json
+
+###
+# 16. Create New Job (Requires Company Admin/Recruiter Authentication)
+POST {{baseUrl}}/jobs
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Senior Full Stack Developer",
+  "description": "We are looking for an experienced full stack developer to join our team. You will be working on cutting-edge projects using modern technologies.",
+  "minPrice": 80000,
+  "maxPrice": 120000,
+  "salaryType": "yearly",
+  "jobLocation": "San Francisco, CA",
+  "applicationDeadline": "2025-12-31",
+  "benefits": "Health insurance, 401k, flexible hours, remote work options",
+  "requirements": "5+ years experience, React, Node.js, PostgreSQL",
+  "responsibilities": "Develop and maintain web applications, collaborate with design team, mentor junior developers",
+  "companyId": {{companyId}},
+  "categoryId": {{categoryId}},
+  "jobTypeId": {{jobTypeId}},
+  "experienceLevelId": {{experienceLevelId}},
+  "skillIds": [{{skillId1}}, {{skillId2}}],
+  "isUrgent": true
+}
+
+###
+# 17. Create Job - Missing Required Fields (Should fail)
+POST {{baseUrl}}/jobs
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Incomplete Job",
+  "companyId": {{companyId}}
+}
+
+###
+# 18. Create Job - Without Authentication (Should fail)
+POST {{baseUrl}}/jobs
+Content-Type: application/json
+
+{
+  "title": "Unauthorized Job Creation",
+  "description": "This should fail without auth",
+  "companyId": {{companyId}}
+}
+
+###
+# 19. Update Job (Requires Company Admin/Recruiter Authentication)
+PUT {{baseUrl}}/jobs/{{testJobId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Updated Senior Full Stack Developer",
+  "description": "Updated job description with new requirements and benefits.",
+  "minPrice": 90000,
+  "maxPrice": 130000,
+  "salaryType": "yearly",
+  "jobLocation": "San Francisco, CA (Remote Available)",
+  "applicationDeadline": "2025-12-31",
+  "benefits": "Health insurance, 401k, flexible hours, remote work options, stock options",
+  "requirements": "5+ years experience, React, Node.js, PostgreSQL, AWS",
+  "responsibilities": "Develop and maintain web applications, collaborate with design team, mentor junior developers, lead technical discussions",
+  "companyId": {{companyId}},
+  "categoryId": {{categoryId}},
+  "jobTypeId": {{jobTypeId}},
+  "experienceLevelId": {{experienceLevelId}},
+  "skillIds": [{{skillId1}}, {{skillId2}}],
+  "isUrgent": false
+}
+
+###
+# 20. Update Non-existent Job (Should return 404)
+PUT {{baseUrl}}/jobs/99999
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "title": "Non-existent Job Update",
+  "companyId": {{companyId}}
+}
+
+###
+# 21. Update Job - Without Authentication (Should fail)
+PUT {{baseUrl}}/jobs/{{testJobId}}
+Content-Type: application/json
+
+{
+  "title": "Unauthorized Update",
+  "companyId": {{companyId}}
+}
+
+###
+# 22. Delete Job (Soft Delete - Requires Company Admin/Recruiter Authentication)
+DELETE {{baseUrl}}/jobs/{{testJobId}}
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 23. Delete Non-existent Job (Should return 404)
+DELETE {{baseUrl}}/jobs/99999
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 24. Delete Job - Without Authentication (Should fail)
+DELETE {{baseUrl}}/jobs/{{testJobId}}
+Content-Type: application/json
+
+###
+# 25. Get Job Applications (Requires Company Admin/Recruiter Authentication)
+GET {{baseUrl}}/jobs/{{testJobId}}/applications
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 26. Apply to Job (Requires User Authentication)
+POST {{baseUrl}}/jobs/{{testJobId}}/apply
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "resumeLink": "https://example.com/resume.pdf",
+  "coverLetter": "I am very interested in this position because..."
+}
+
+###
+# 27. Apply to Job - Missing Fields
+POST {{baseUrl}}/jobs/{{testJobId}}/apply
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "resumeLink": "https://example.com/resume.pdf"
+}
+
+###
+# 28. Apply to Job - Already Applied (Should fail)
+POST {{baseUrl}}/jobs/{{testJobId}}/apply
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "resumeLink": "https://example.com/resume.pdf",
+  "coverLetter": "Trying to apply again..."
+}
+
+###
+# 29. Apply to Job - Without Authentication (Should fail)
+POST {{baseUrl}}/jobs/{{testJobId}}/apply
+Content-Type: application/json
+
+{
+  "resumeLink": "https://example.com/resume.pdf",
+  "coverLetter": "Unauthorized application"
+}
+
+###
+# 30. Apply to Non-existent Job (Should return 404)
+POST {{baseUrl}}/jobs/99999/apply
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "resumeLink": "https://example.com/resume.pdf",
+  "coverLetter": "Applying to non-existent job"
+}
+
+###
+# 31. Save Job (Requires User Authentication)
+POST {{baseUrl}}/jobs/{{testJobId}}/save
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 32. Save Job - Without Authentication (Should fail)
+POST {{baseUrl}}/jobs/{{testJobId}}/save
+Content-Type: application/json
+
+###
+# 33. Save Job - Already Saved (Should update/upsert)
+POST {{baseUrl}}/jobs/{{testJobId}}/save
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 34. Unsave Job (Requires User Authentication)
+DELETE {{baseUrl}}/jobs/{{testJobId}}/save
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 35. Unsave Job - Not Previously Saved (Should handle gracefully)
+DELETE {{baseUrl}}/jobs/{{testJobId}}/save
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+###
+# 36. Unsave Job - Without Authentication (Should fail)
+DELETE {{baseUrl}}/jobs/{{testJobId}}/save
+Content-Type: application/json
+
+###
+# Advanced Test Scenarios
+
+# 37. Search with Special Characters
+GET {{baseUrl}}/jobs?search=C%2B%2B&location=San%20Francisco
+Content-Type: application/json
+
+###
+# 38. Pagination Edge Cases - Page 0
+GET {{baseUrl}}/jobs?page=0&limit=10
+Content-Type: application/json
+
+###
+# 39. Pagination Edge Cases - High Page Number
+GET {{baseUrl}}/jobs?page=1000&limit=10
+Content-Type: application/json
+
+###
+# 40. Large Limit Test
+GET {{baseUrl}}/jobs?page=1&limit=100
+Content-Type: application/json
+
+###
+# 41. Multiple Skills Filter
+GET {{baseUrl}}/jobs?skills=1,2,3,4,5
+Content-Type: application/json
+
+###
+# Test Sequences
+# Recommended test flow:
+# 1. Get all jobs (#1) - Verify API is working
+# 2. Create job (#16) - Save the returned job ID
+# 3. Get specific job (#13) - Using the ID from step 2
+# 4. Update job (#19) - Using the same job ID
+# 5. Apply to job (#26) - As a regular user
+# 6. Save job (#31) - Save the job for later
+# 7. Get saved jobs (#11) - Verify job appears in saved list
+# 8. Get applied jobs (#12) - Verify job appears in applied list
+# 9. Unsave job (#34) - Remove from saved jobs
+# 10. Delete job (#22) - Soft delete the job
+
+### Environment Variables
+# For different environments, update these variables:
+
+# Development
+# @baseUrl = http://localhost:3000
+
+# Staging
+# @baseUrl = https://staging-api.yourcompany.com
+
+# Production
+# @baseUrl = https://api.yourcompany.com
+
+### Notes:
+# - Replace {{authToken}} with actual JWT token from login
+# - Replace {{testJobId}} with actual job ID from your database
+# - Update company, category, jobType, experienceLevel, and skill IDs based on your data
+# - Some endpoints require specific user roles (company admin/recruiter)
+# - The view tracking feature will only work with authenticated requests

@@ -26,10 +26,10 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "email": "{{adminEmail}}",
-  "password": "{{adminPassword}}",
+  "email": "michaelgetu21@gmail.com",
+  "password": "anotherPassword",
   "name": "Admin User",
-  "roleId": 2
+  "roleId": 4
 }
 
 ###
@@ -52,14 +52,15 @@ Content-Type: application/json
   "email": "incomplete@example.com"
 }
 
-###
-# 5. User Login - Valid Credentials
+
+### 5. User Login - Valid Credentials
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
+
 {
-  "email": "{{testEmail}}",
-  "password": "{{testPassword}}"
+    "email": "admin3@gmail.com",
+    "password": "newPassword123"
 }
 
 ###
@@ -102,7 +103,7 @@ POST {{baseUrl}}/auth/forgot-password
 Content-Type: application/json
 
 {
-  "email": "{{testEmail}}"
+  "email": "michaelgetu21@gmail.com"
 }
 
 ###
@@ -128,7 +129,7 @@ POST {{baseUrl}}/auth/reset-password
 Content-Type: application/json
 
 {
-  "token": "your_reset_token_here",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjM5LCJyb2xlSWQiOjQsImlhdCI6MTc1Njk5MjIzNCwiZXhwIjoxNzU3MDc4NjM0fQ.pBmsi0-wigaA83mqwQkTaHTFtf5sqdi37ESjhuovTS8",
   "newPass": "newPassword123"
 }
 
