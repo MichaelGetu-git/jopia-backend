@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import { authenticate } from './middleware/authentication.ts';
 import admin from './routes/admin.ts'
 import profile from './routes/profiles.ts'
@@ -11,6 +12,9 @@ import applications from './routes/applications.ts'
 const app = express()
 const port = 3000
 
+app.use(cors({
+    origin: "http://localhost:5173"
+}))
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 

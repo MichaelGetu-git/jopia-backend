@@ -159,10 +159,10 @@ router.put('/me', upload.fields([
 
 router.get('/:id', async (req, res) => {
     try {
-        const id = parseInt(req.params.id);
+        const userId = parseInt(req.params.id);
 
         const profile = await prisma.profile.findUnique({
-            where: { id: id },
+            where: { userId: userId },
             include: {
                 educations: true,
                 experiences: {

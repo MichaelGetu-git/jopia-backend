@@ -1,48 +1,42 @@
-### Get My Applications
-GET http://localhost:3000/api/applications/me
-
-### Get Application by ID
-GET http://localhost:3000/api/applications/:id
-
-### Review Application - Approve
-PUT http://localhost:3000/api/applications/:id/review
+### Get my applied jobs
+GET http://localhost:5000/api/applications/me
 Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Get application by ID
+GET http://localhost:5000/api/applications/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Update application (re-apply)
+PUT http://localhost:5000/api/applications/1/review
+Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-  "status": "approved"
+  "resumeLink": "https://example.com/resume.pdf",
+  "coverLetter": "Updated cover letter content"
 }
 
-### Review Application - Reject
-PUT http://localhost:3000/api/applications/:id/review
+###
+
+### Update application status (admin/recruiter only)
+PUT http://localhost:5000/api/applications/1/status
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
-  "status": "rejected"
+  "statusId": 2,
+  "notes": "Promising candidate, moving to next round"
 }
 
-### Update Application Status - Accepted
-PUT http://localhost:3000/api/applications/:id/status
+###
+
+### Delete an application (only if not reviewed yet)
+DELETE http://localhost:5000/api/applications/1
 Content-Type: application/json
-
-{
-  "status": "accepted"
-}
-
-### Update Application Status - Interview
-PUT http://localhost:3000/api/applications/:id/status
-Content-Type: application/json
-
-{
-  "status": "interview"
-}
-
-### Update Application Status - Rejected
-PUT http://localhost:3000/api/applications/:id/status
-Content-Type: application/json
-
-{
-  "status": "rejected"
-}
-
-### Delete Application
-DELETE http://localhost:3000/api/applications/:id
+Authorization: Bearer {{token}}

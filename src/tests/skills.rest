@@ -1,35 +1,27 @@
-### Get All Skills
-GET http://localhost:3000/skills
+### Get all skills
+GET http://localhost:5000/api/skills
+Content-Type: application/json
 
-### Create Skill - Success
-POST http://localhost:3000/skills
+### Search skills by name
+GET http://localhost:5000/api/skills?search=javascript&limit=10
+Content-Type: application/json
+
+### Create (or upsert) a new skill
+POST http://localhost:5000/api/skills
 Content-Type: application/json
 
 {
-  "name": "New Skill"
+  "name": "JavaScript"
 }
 
-### Create Skill - Missing Name
-POST http://localhost:3000/skills
+### Create another skill
+POST http://localhost:5000/api/skills
 Content-Type: application/json
 
 {
-  "description": "A skill without a name"
+  "name": "Python"
 }
 
-### Create Skill - Duplicate Skill Name
-POST http://localhost:3000/skills
+### Get popular skills
+GET http://localhost:5000/api/skills/popular
 Content-Type: application/json
-
-{
-  "name": "New Skill"
-}
-
-### Get Popular Skills
-GET http://localhost:3000/skills/popular
-
-### Search Skills by Query
-GET http://localhost:3000/skills?search=java
-
-### Search Skills by Query and Limit
-GET http://localhost:3000/skills?search=python&limit=5
